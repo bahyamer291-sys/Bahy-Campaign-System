@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bahy's Campaign Management System</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+        .gradient-blue { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
+        .gradient-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .gradient-purple { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); }
+        .gradient-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        .card { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+        .badge { display: inline-block; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-planning { background-color: #fef3c7; color: #92400e; }
+        .success { color: #16a34a; }
+        .warning { color: #ea580c; }
+        .danger { color: #dc2626; }
+        .btn-primary { background-color: #2563eb; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-success { background-color: #16a34a; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+        .btn-success:hover { background-color: #15803d; }
+        input, select { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 1rem; }
+        input:focus, select:focus { outline: none; ring: 2px; ring-color: #2563eb; border-color: #2563eb; }
+        .metric-card { padding: 1.5rem; border-radius: 0.5rem; color: white; }
+        .table-striped tbody tr:nth-child(even) { background-color: #f3f4f6; }
+        .table-striped tbody tr:hover { background-color: #e5e7eb; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function CampaignSystem() {
+            const [currentView, setCurrentView] = useState('dashboard');
+            const [campaigns, setCampaigns] = useState([
+                {
+                    id: 1,
+                    name: 'Premium Bags Campaign - Week 2',
+                    budget: 10000,
+                    spent: 5200,
+                    cpp: 165,
+                    roas: 2.1,
+                    conversions: 31,
+                    phase: 'Phase 2',
+                    status: 'active',
+                    createdDate: '2024-05-15'
+                }
+            ]);
+            const [newCampaign, setNewCampaign] = useState({
+                budget: '',
+                productType: '',
+                priceRange: '',
+                targetMarket: 'Egypt'
+            });
+            const [managementFee, setManagementFee] = useState(null);
+            const [showFeeCalculation, setShowFeeCalculation] = useState(false);
+            const [showStrategy, setShowStrategy] = useState(false);
+            const [lastStrategy, setLastStrategy] = useState(null);
+
+            const calculateFee = (budget) => {
+                if (!budget) return null;
+                const percentage = 30;
+                const fee = (budget * percentage) / 100;
+                return {
+                    amount: fee,
+                    percentage: percentage,
+                    hourlyRate: fee / 40,
+                    profitability: 'High'
+                };
+            };
+
+            const handleFeeCalculation = () => {
+                const budget = parseFloat(newCampaign.budget);
+                if (budget) {
+                    setManagementFee(calculateFee(budget));
+                    setShowFeeCalculation(true);
+                }
+            };
+
+            const generateStrategy = () => {
+                if (!newCampaign.budget || !newCampaign.productType) {
+                    alert('Please fill in budget and product type');
+                    return;
+                }
+
+                const budget = parseFloat(newCampaign.budget);
+                const strategy = {
+                    phase1Budget: Math.round(budget * 0.30),
+                    phase2Budget: Math.round(budget * 0.30),
+                    phase3Budget: Math.round(budget * 0.40),
+                    metaBudget: Math.round(budget * 0.70),
+                    tiktokBudget: Math.round(budget * 0.20),
+                    googleBudget: Math.round(budget * 0.10),
+                    cppTarget: [100, 180],
+                    roasTarget: [2.5, 3.5],
+                    conversionTarget: [0.5, 2],
+                    creativeAngles: [
+                        'Lifestyle/Aspirational - Show the lifestyle your product enables',
+                        'Problem-Solution - Quality & durability benefits',
+                        'Social Proof/Testimonials - Customer reviews & unboxing',
+                        'Limited Offer/Urgency - Special discount or scarcity',
+                        'Educational/How-To - Styling tips and use cases'
+                    ],
+                    metaTargeting: {
+                        interests: ['Fashion', 'Luxury Goods', 'Shopping', 'Bags & Accessories'],
+                        ageRange: '25-45',
+                        genders: 'Women',
+                        locations: 'Egypt',
+                        behaviors: 'Online Shoppers, High Spenders'
+                    },
+                    googleKeywords: [
+                        'buy luxury bags Egypt',
+                        'designer handbags Cairo',
+                        'premium leather bags',
+                        'women luxury bags online',
+                        'high-quality handbags Egypt'
+                    ]
+                };
+
+                setLastStrategy(strategy);
+                setShowStrategy(true);
+
+                const newCampaignData = {
+                    id: campaigns.length + 1,
+                    name: `${newCampaign.productType} Campaign - ${new Date().toLocaleDateString()}`,
+                    budget: budget,
+                    spent: 0,
+                    cpp: 0,
+                    roas: 0,
+                    conversions: 0,
+                    phase: 'Phase 1',
+                    status: 'planning',
+                    createdDate: new Date().toISOString().split('T')[0],
+                    strategy: strategy
+                };
+
+                setCampaigns([...campaigns, newCampaignData]);
+            };
+
+            const DashboardView = () => (
+                <div className="space-y-8">
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="metric-card gradient-blue rounded-lg">
+                            <div className="text-sm opacity-90">Active Campaigns</div>
+                            <div className="text-3xl font-bold">{campaigns.length}</div>
+                        </div>
+                        <div className="metric-card gradient-green rounded-lg">
+                            <div className="text-sm opacity-90">Total Budget</div>
+                            <div className="text-3xl font-bold">{campaigns.reduce((sum, c) => sum + c.budget, 0).toLocaleString()} EGP</div>
+                        </div>
+                        <div className="metric-card gradient-purple rounded-lg">
+                            <div className="text-sm opacity-90">Total Spent</div>
+                            <div className="text-3xl font-bold">{campaigns.reduce((sum, c) => sum + c.spent, 0).toLocaleString()} EGP</div>
+                        </div>
+                        <div className="metric-card gradient-orange rounded-lg">
+                            <div className="text-sm opacity-90">Total Conversions</div>
+                            <div className="text-3xl font-bold">{campaigns.reduce((sum, c) => sum + c.conversions, 0)}</div>
+                        </div>
+                    </div>
+
+                    {/* Active Campaigns */}
+                    <div className="bg-white rounded-lg card p-6">
+                        <h3 className="text-xl font-bold mb-4 text-gray-800">Active Campaigns</h3>
+                        <div className="space-y-3">
+                            {campaigns.map(campaign => (
+                                <div key={campaign.id} className="border-l-4 border-blue-500 bg-gray-50 p-4 rounded">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h4 className="font-bold text-gray-800">{campaign.name}</h4>
+                                            <p className="text-sm text-gray-600">{campaign.phase} • {campaign.createdDate}</p>
+                                        </div>
+                                        <span className={`badge ${campaign.status === 'active' ? 'status-active' : 'status-planning'}`}>
+                                            {campaign.status.toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-4 text-sm">
+                                        <div>
+                                            <span className="text-gray-600">Budget: </span>
+                                            <span className="font-bold">{campaign.budget.toLocaleString()} EGP</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-600">Spent: </span>
+                                            <span className="font-bold">{campaign.spent.toLocaleString()} EGP</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-600">CPP: </span>
+                                            <span className={`font-bold ${campaign.cpp >= 100 && campaign.cpp <= 180 ? 'success' : campaign.cpp > 180 ? 'danger' : 'warning'}`}>
+                                                {campaign.cpp} EGP {campaign.cpp && (campaign.cpp >= 100 && campaign.cpp <= 180 ? '✓' : campaign.cpp > 180 ? '✗' : '⚠')}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-600">ROAS: </span>
+                                            <span className={`font-bold ${campaign.roas >= 2.5 ? 'success' : campaign.roas > 1.5 ? 'warning' : 'danger'}`}>
+                                                {campaign.roas}x
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* KPIs & Success Indicators */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white rounded-lg card p-6">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800">Expected KPIs</h3>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <span className="text-gray-600">Cost Per Purchase (CPP)</span>
+                                    <span className="font-bold text-blue-600">100-180 EGP</span>
+                                </div>
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <span className="text-gray-600">Return on Ad Spend (ROAS)</span>
+                                    <span className="font-bold text-blue-600">2.5x - 3.5x</span>
+                                </div>
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <span className="text-gray-600">Conversion Rate</span>
+                                    <span className="font-bold text-blue-600">0.5% - 2%</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600">Click-Through Rate (CTR)</span>
+                                    <span className="font-bold text-blue-600">0.5% - 1.5%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg card p-6">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800">Success Indicators</h3>
+                            <div className="space-y-2">
+                                <div className="flex items-center space-x-2">
+                                    <span className="success font-bold">✓</span>
+                                    <span className="text-gray-700">CPP 100-180 EGP = PROFITABLE</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <span className="success font-bold">✓</span>
+                                    <span className="text-gray-700">ROAS above 2.5x = SCALABLE</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <span className="success font-bold">✓</span>
+                                    <span className="text-gray-700">Conversion rate 0.5%+ = VIABLE</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <span className="danger font-bold">✗</span>
+                                    <span className="text-gray-700">CPP > 250 EGP = PAUSE & OPTIMIZE</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <span className="danger font-bold">✗</span>
+                                    <span className="text-gray-700">ROAS < 1.5x = RESTRUCTURE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const BriefGeneratorView = () => (
+                <div className="space-y-6">
+                    {/* Input Form */}
+                    <div className="bg-white rounded-lg card p-8">
+                        <h2 className="text-2xl font-bold mb-6 text-gray-800">Campaign Brief Generator</h2>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Campaign Budget (EGP)</label>
+                                <input
+                                    type="number"
+                                    placeholder="10000"
+                                    value={newCampaign.budget}
+                                    onChange={(e) => setNewCampaign({...newCampaign, budget: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Product Type</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., Bags, Electronics, Fashion"
+                                    value={newCampaign.productType}
+                                    onChange={(e) => setNewCampaign({...newCampaign, productType: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Price Range (EGP)</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., 1100-1500"
+                                    value={newCampaign.priceRange}
+                                    onChange={(e) => setNewCampaign({...newCampaign, priceRange: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">Target Market</label>
+                                <select
+                                    value={newCampaign.targetMarket}
+                                    onChange={(e) => setNewCampaign({...newCampaign, targetMarket: e.target.value})}
+                                >
+                                    <option>Egypt</option>
+                                    <option>UAE</option>
+                                    <option>Saudi Arabia</option>
+                                    <option>Multi-Market</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={generateStrategy} className="flex-1 btn-primary">
+                                Generate Strategy
+                            </button>
+                            <button onClick={handleFeeCalculation} className="flex-1 btn-success">
+                                Calculate Management Fee
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Generated Strategy */}
+                    {showStrategy && lastStrategy && (
+                        <div className="bg-white rounded-lg card p-8">
+                            <h3 className="text-xl font-bold mb-6 text-gray-800">Generated Campaign Strategy</h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                                    <h4 className="font-bold text-blue-900 mb-3">Budget Allocation</h4>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span>Phase 1 (Testing):</span>
+                                            <span className="font-bold">{lastStrategy.phase1Budget.toLocaleString()} EGP</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Phase 2 (Scale):</span>
+                                            <span className="font-bold">{lastStrategy.phase2Budget.toLocaleString()} EGP</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Phase 3 (Steady):</span>
+                                            <span className="font-bold">{lastStrategy.phase3Budget.toLocaleString()} EGP</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                                    <h4 className="font-bold text-green-900 mb-3">Platform Split</h4>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span>Meta (70%):</span>
+                                            <span className="font-bold">{lastStrategy.metaBudget.toLocaleString()} EGP</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>TikTok (20%):</span>
+                                            <span className="font-bold">{lastStrategy.tiktokBudget.toLocaleString()} EGP</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Google (10%):</span>
+                                            <span className="font-bold">{lastStrategy.googleBudget.toLocaleString()} EGP</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                                    <h4 className="font-bold text-purple-900 mb-3">KPI Targets</h4>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                            <span>CPP Target:</span>
+                                            <span className="font-bold">100-180 EGP</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>ROAS Target:</span>
+                                            <span className="font-bold">2.5-3.5x</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Conversion Rate:</span>
+                                            <span className="font-bold">0.5-2%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500 mb-6">
+                                <h4 className="font-bold text-orange-900 mb-3">Creative Angles to Test</h4>
+                                <div className="space-y-2">
+                                    {lastStrategy.creativeAngles.map((angle, idx) => (
+                                        <div key={idx} className="text-sm text-gray-700 pl-4">
+                                            <span className="font-semibold text-orange-700">•</span> {angle}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 className="font-bold text-gray-800 mb-3">Meta Targeting</h4>
+                                    <div className="bg-gray-50 p-4 rounded text-sm space-y-2">
+                                        <div><span className="font-semibold">Interests:</span> {lastStrategy.metaTargeting.interests.join(', ')}</div>
+                                        <div><span className="font-semibold">Age:</span> {lastStrategy.metaTargeting.ageRange}</div>
+                                        <div><span className="font-semibold">Gender:</span> {lastStrategy.metaTargeting.genders}</div>
+                                        <div><span className="font-semibold">Location:</span> {lastStrategy.metaTargeting.locations}</div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-800 mb-3">Google Keywords</h4>
+                                    <div className="bg-gray-50 p-4 rounded text-sm space-y-2">
+                                        {lastStrategy.googleKeywords.map((keyword, idx) => (
+                                            <div key={idx} className="flex items-center space-x-2">
+                                                <span className="text-blue-600">•</span>
+                                                <span>{keyword}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Fee Calculation Result */}
+                    {showFeeCalculation && managementFee && (
+                        <div className="bg-white rounded-lg card p-8">
+                            <h3 className="text-xl font-bold mb-6 text-gray-800">Management Fee Analysis</h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-green-50 p-6 rounded-lg border-2 border-green-300">
+                                    <h4 className="font-bold text-green-900 mb-4 text-lg">Fee Calculation</h4>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between text-gray-700">
+                                            <span>Campaign Budget:</span>
+                                            <span className="font-bold">{parseFloat(newCampaign.budget).toLocaleString()} EGP</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-700">
+                                            <span>Fee Percentage:</span>
+                                            <span className="font-bold">{managementFee.percentage}%</span>
+                                        </div>
+                                        <div className="flex justify-between text-lg font-bold border-t-2 border-green-300 pt-3 text-green-900">
+                                            <span>Management Fee:</span>
+                                            <span>{managementFee.amount.toLocaleString()} EGP</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-300">
+                                    <h4 className="font-bold text-blue-900 mb-4 text-lg">Profitability Breakdown</h4>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between text-gray-700">
+                                            <span>Estimated Hours:</span>
+                                            <span className="font-bold">~40 hours/month</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-700">
+                                            <span>Hourly Rate:</span>
+                                            <span className="font-bold">{Math.round(managementFee.hourlyRate)} EGP/hour</span>
+                                        </div>
+                                        <div className="flex justify-between text-lg font-bold border-t-2 border-blue-300 pt-3 text-blue-900">
+                                            <span>Profitability:</span>
+                                            <span className="success">{managementFee.profitability}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                                <p className="text-sm text-gray-700">
+                                    <span className="font-bold">Assessment:</span> Your 30% management fee is at the HIGH end of industry standards but JUSTIFIED for senior media buyer expertise. This ensures profitability while delivering exceptional value.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            const FeeManagementView = () => (
+                <div className="space-y-6">
+                    <div className="bg-white rounded-lg card p-8">
+                        <h2 className="text-2xl font-bold mb-6 text-gray-800">Fee Management System</h2>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div className="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                                <h3 className="font-bold text-blue-900 mb-4">E-Commerce Fee Standards</h3>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span>Budget 2k-5k EGP</span>
+                                        <span className="font-bold">20-35%</span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span>Budget 5k-10k EGP</span>
+                                        <span className="font-bold">25-35%</span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span>Budget 10k-20k EGP</span>
+                                        <span className="font-bold">25-30%</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Budget 20k+ EGP</span>
+                                        <span className="font-bold">20-25%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+                                <h3 className="font-bold text-green-900 mb-4">Your Fee Positioning</h3>
+                                <div className="space-y-3 text-sm">
+                                    <div className="bg-white p-3 rounded border-l-4 border-green-500">
+                                        <div className="font-semibold text-gray-800">Current Rate: 30%</div>
+                                        <div className="text-gray-600 text-xs">Premium positioning for senior expertise</div>
+                                    </div>
+                                    <div className="bg-white p-3 rounded border-l-4 border-blue-500">
+                                        <div className="font-semibold text-gray-800">At 10k Budget: 3,000 EGP</div>
+                                        <div className="text-gray-600 text-xs">Profit margin with ~40 hours/month</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-gray-50 p-6 rounded-lg overflow-x-auto">
+                            <h3 className="font-bold text-gray-800 mb-4">Fee Scaling Model</h3>
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b-2 border-gray-300">
+                                        <th className="text-left p-3 font-bold">Budget Range</th>
+                                        <th className="text-left p-3 font-bold">Recommended %</th>
+                                        <th className="text-left p-3 font-bold">Fee Amount</th>
+                                        <th className="text-left p-3 font-bold">Hourly Rate*</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="table-striped">
+                                    <tr>
+                                        <td className="p-3">2,000 - 5,000 EGP</td>
+                                        <td className="p-3">30-35%</td>
+                                        <td className="p-3 font-bold">600-1,750 EGP</td>
+                                        <td className="p-3 font-bold success">15-44 EGP/hr</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="p-3">5,000 - 10,000 EGP</td>
+                                        <td className="p-3">25-30%</td>
+                                        <td className="p-3 font-bold">1,250-3,000 EGP</td>
+                                        <td className="p-3 font-bold success">31-75 EGP/hr</td>
+                                    </tr>
+                                    <tr style={{backgroundColor: '#fef3c7'}}>
+                                        <td className="p-3 font-bold">10,000 - 15,000 EGP</td>
+                                        <td className="p-3 font-bold">25-30%</td>
+                                        <td className="p-3 font-bold" style={{color: '#2563eb'}}>2,500-4,500 EGP</td>
+                                        <td className="p-3 font-bold success">63-113 EGP/hr</td>
+                                    </tr>
+                                    <tr>
+                                        <td className="p-3">15,000 - 20,000 EGP</td>
+                                        <td className="p-3">20-25%</td>
+                                        <td className="p-3 font-bold">3,000-5,000 EGP</td>
+                                        <td className="p-3 font-bold success">75-125 EGP/hr</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p className="text-xs text-gray-600 mt-3">* Based on ~40 hours per month management time</p>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-gray-100">
+                    {/* Header */}
+                    <div className="gradient-blue text-white shadow-lg">
+                        <div className="max-w-6xl mx-auto px-6 py-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-3xl font-bold">BAHY'S CAMPAIGN SYSTEM</h1>
+                                    <p className="text-blue-100 text-sm mt-1">E-Commerce Media Buying Management Platform</p>
+                                </div>
+                                <div className="text-right text-sm">
+                                    <div className="font-semibold">bahyamer291@gmail.com</div>
+                                    <div className="text-blue-100">Senior Media Buyer</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Navigation */}
+                    <div className="bg-white shadow-md sticky top-0 z-10">
+                        <div className="max-w-6xl mx-auto px-6 py-0">
+                            <div className="flex space-x-1">
+                                {[
+                                    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+                                    { id: 'brief', label: 'Campaign Brief', icon: '✨' },
+                                    { id: 'fees', label: 'Fee Management', icon: '💰' }
+                                ].map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setCurrentView(tab.id)}
+                                        className={`px-6 py-4 font-semibold text-sm border-b-2 transition ${
+                                            currentView === tab.id
+                                                ? 'border-blue-600 text-blue-600 bg-blue-50'
+                                                : 'border-transparent text-gray-600 hover:text-gray-800'
+                                        }`}
+                                    >
+                                        {tab.icon} {tab.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="max-w-6xl mx-auto px-6 py-8">
+                        {currentView === 'dashboard' && <DashboardView />}
+                        {currentView === 'brief' && <BriefGeneratorView />}
+                        {currentView === 'fees' && <FeeManagementView />}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="bg-gray-800 text-gray-300 mt-16">
+                        <div className="max-w-6xl mx-auto px-6 py-8 text-center">
+                            <p className="text-sm">© 2024 Bahy's Campaign Management System • Built for Freelance Media Buyers</p>
+                            <p className="text-xs mt-2 text-gray-500">Optimize. Scale. Profit. 🚀</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<CampaignSystem />);
+    </script>
+</body>
+</html>
